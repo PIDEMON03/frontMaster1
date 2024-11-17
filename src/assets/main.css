@@ -1,9 +1,1 @@
-a {
-  color: inherit;
-  text-decoration: none !important;
-}
-
-.navbar-dark {
-  background-color: #273656;
-  color: white !important;
-}
+@import 'vue-select/dist/vue-select.css';
