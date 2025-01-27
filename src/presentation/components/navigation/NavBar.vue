@@ -8,9 +8,17 @@ import { RouterLink } from 'vue-router'
             <span class="fs-4">Universite</span>
         </a>
         <hr>
-        <ul class="nav nav-pills flex-column mb-auto">
-
-        </ul>
+      <ul class="nav nav-pills flex-column mb-auto">
+        <li class="nav-item">
+          <RouterLink class="nav-link" active-class="active" to="/">Accueil</RouterLink>
+        </li>
+        <li class="nav-item">
+          <RouterLink class="nav-link" active-class="active" to="/parcours">Parcours</RouterLink>
+        </li>
+        <li class="nav-item">
+          <RouterLink class="nav-link" active-class="active" to="/ue">UE</RouterLink>
+        </li>
+      </ul>
         <hr>
         <div class="dropdown">
             <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle"
