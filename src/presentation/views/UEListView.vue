@@ -83,5 +83,5 @@ const refreshUEList = () => {
       </div>
     </div>
   </div>
-  <UEForm ref="ueForm" :ue="null" @refresh:ue="refreshUEList" />
+  <UEForm ref="ueForm" :ue="null" @refresh:ue="refreshUEList" @create:ue="refreshUEList" @update:ue="refreshUEList" />
 </template>

@@ -4,15 +4,14 @@ import { BootstrapButtonEnum } from '@/types/BootstrapButtonEnum';
 import { Parcours } from '@/domain/entities/Parcours';
 import CustomInput from '@/presentation/components/forms/components/CustomInput.vue';
 import CustomButton from '@/presentation/components/forms/components/CustomButton.vue';
-import { ParcoursDAO } from '@/domain/daos/ParcoursDAO';
 import CustomModal from '@/presentation/components/modals/CustomModal.vue';
 
-// Calculer la plage dynamique basée sur l'année actuelle
 const currentYear = new Date().getFullYear();
 const minYear = currentYear - 20;
 const maxYear = currentYear + 20;
 
 const currentParcours = ref<Parcours>(new Parcours(null, null, null));
+const editedParcours = ref<Parcours>(new Parcours(null, null, null));
 const isOpen = ref(false);
 const emit = defineEmits(['refresh:parcours']);
 
@@ -25,8 +24,8 @@ const formErrors = ref<{
 });
 
 // Validation de NomParcours
-watch(() => currentParcours.value.NomParcours, () => {
-  if (!currentParcours.value.NomParcours || currentParcours.value.NomParcours.trim() === '' || currentParcours.value.NomParcours.length < 3) {
+watch(() => editedParcours.value.NomParcours, () => {
+  if (!editedParcours.value.NomParcours || editedParcours.value.NomParcours.trim() === '' || editedParcours.value.NomParcours.length < 3) {
     formErrors.value.NomParcours = 'Le nom du parcours doit faire au moins 3 caractères';
   } else {
     formErrors.value.NomParcours = null;
@@ -34,10 +33,10 @@ watch(() => currentParcours.value.NomParcours, () => {
 });
 
 // Validation de AnneeFormation
-watch(() => currentParcours.value.AnneeFormation, () => {
-  const year = parseInt(currentParcours.value.AnneeFormation as any, 10);
+watch(() => editedParcours.value.AnneeFormation, () => {
+  const year = parseInt(editedParcours.value.AnneeFormation as any, 10);
 
-  if (!currentParcours.value.AnneeFormation || isNaN(year)) {
+  if (!editedParcours.value.AnneeFormation || isNaN(year)) {
     formErrors.value.AnneeFormation = 'L’année de formation doit être un nombre entier';
   } else if (year < minYear || year > maxYear) {
     formErrors.value.AnneeFormation = `L’année de formation doit être comprise entre ${minYear} et ${maxYear}`;
@@ -52,12 +51,17 @@ const openForm = (parcours: Parcours | null = null) => {
 
   if (parcours) {
     currentParcours.value = parcours;
+    editedParcours.value = { ...parcours }; // Créez une copie temporaire
+  } else {
+    currentParcours.value = new Parcours(null, null, null);
+    editedParcours.value = new Parcours(null, null, null);
   }
 };
 
 const closeForm = () => {
   isOpen.value = false;
   currentParcours.value = new Parcours(null, null, null);
+  editedParcours.value = new Parcours(null, null, null);
   formErrors.value = { NomParcours: null, AnneeFormation: null };
 };
 
@@ -72,6 +76,7 @@ const props = defineProps({
 onBeforeMount(() => {
   if (props.parcours) {
     currentParcours.value = props.parcours;
+    editedParcours.value = { ...props.parcours };
   }
 });
 
@@ -81,6 +86,9 @@ const saveParcours = () => {
     alert('Veuillez corriger les erreurs dans le formulaire.');
     return;
   }
+
+  // Appliquez les modifications à currentParcours
+  currentParcours.value = { ...editedParcours.value };
 
   const storedParcours = JSON.parse(localStorage.getItem('parcours') || '[]');
 
@@ -119,10 +127,7 @@ defineExpose({
   closeForm,
   deleteParcours,
 });
-
-
 </script>
-
 
 <template>
   <CustomModal :isOpen="isOpen">
@@ -133,48 +138,46 @@ defineExpose({
     <template v-slot:body>
       <div class="text-start mt-1 mb-1">
         <form>
-        <!-- Champ NomParcours -->
-            <CustomInput
-              v-model="currentParcours.NomParcours"
-              id="intitule"
-              libelle="Intitulé"
-              type="text"
-              placeholder="Intitulé du parcours"
-              :error="formErrors.NomParcours"
-            />
-            <!-- Champ AnneeFormation -->
-            <CustomInput
-              class="mt-2"
-              v-model="currentParcours.AnneeFormation"
-              id="annee"
-              libelle="Année"
-              type="number"
-              placeholder="Année de formation"
-              :error="formErrors.AnneeFormation"
-            />
-          </form>
-        </div>
-        <CustomButton
-          class="mt-1"
-          style="margin-left: 5px"
-          :color="BootstrapButtonEnum.danger"
-          @click="closeForm"
-        >
-          Annuler
-        </CustomButton>
-        <CustomButton
-          class="mt-1"
-          style="margin-left: 5px"
-          :color="BootstrapButtonEnum.primary"
-          @click="saveParcours"
-        >
-          Enregistrer
-        </CustomButton>
+          <!-- Champ NomParcours -->
+          <CustomInput
+            v-model="editedParcours.NomParcours"
+            id="intitule"
+            libelle="Intitulé"
+            type="text"
+            placeholder="Intitulé du parcours"
+            :error="formErrors.NomParcours"
+          />
+          <!-- Champ AnneeFormation -->
+          <CustomInput
+            class="mt-2"
+            v-model="editedParcours.AnneeFormation"
+            id="annee"
+            libelle="Année"
+            type="number"
+            placeholder="Année de formation"
+            :error="formErrors.AnneeFormation"
+          />
+        </form>
+      </div>
+      <CustomButton
+        class="mt-1"
+        style="margin-left: 5px"
+        :color="BootstrapButtonEnum.danger"
+        @click="closeForm"
+      >
+        Annuler
+      </CustomButton>
+      <CustomButton
+        class="mt-1"
+        style="margin-left: 5px"
+        :color="BootstrapButtonEnum.primary"
+        @click="saveParcours"
+      >
+        Enregistrer
+      </CustomButton>
     </template>
   </CustomModal>
 </template>
-
-
 
 <style scoped>
 .custom-modal {

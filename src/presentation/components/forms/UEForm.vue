@@ -7,7 +7,8 @@ import CustomButton from '@/presentation/components/forms/components/CustomButto
 import CustomModal from '@/presentation/components/modals/CustomModal.vue';
 import type { Parcours } from '@/domain/entities/Parcours';
 
-const currentUe = ref<UE>(new UE(null, null, null, null));
+const currentUe = ref<UE>(new UE(null, null, null, null)); // Modèle de l'UE à modifier
+const initialUe = ref<UE | null>(null); // Pour garder l'UE initiale avant modification
 const isOpen = ref(false);
 const formErrors = ref<{
   NumeroUe: string | null;
@@ -25,7 +26,8 @@ const parcoursOptions = ref<Parcours[]>([]);
 const openForm = (ue: UE | null = null) => {
   isOpen.value = true;
   if (ue) {
-    currentUe.value = ue;
+    initialUe.value = { ...ue }; // Garder une copie de l'UE initiale
+    currentUe.value = { ...ue }; // Charger les données de l'UE dans le formulaire
   }
 };
 
@@ -53,12 +55,13 @@ const saveUE = () => {
       alert('UE mise à jour avec succès.');
     }
   } else {
-    // Création d'une nouvelle UE
     currentUe.value.ID = Date.now(); // Génération d'un ID unique basé sur le timestamp
     storedUEs.push({ ...currentUe.value });
     localStorage.setItem('ues', JSON.stringify(storedUEs));
     alert('UE créée avec succès.');
   }
+
+  emit('refresh:ue');
 
   closeForm();
 };
@@ -122,7 +125,7 @@ watch(() => currentUe.value.Parcours, () => {
 <template>
   <CustomModal :isOpen="isOpen">
     <template v-slot:title>
-      <template v-if="ue && ue.ID"> Modification de l'UE</template>
+      <template v-if="currentUe.ID"> Modification de l'UE</template>
       <template v-else> Nouvelle UE</template>
     </template>
     <template v-slot:body>
